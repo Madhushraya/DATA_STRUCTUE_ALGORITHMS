@@ -27,11 +27,13 @@ class binary_tree
         }
 
         int insert(int,struct node*);
-        void inorder();
-        void preorder();
-        void postorder();
-        int search(int);
+        void inorder(struct node*);
+        void preorder(struct node*);
+        void postorder(struct node*);
+        int search(int,struct node*);
         int ins(int);
+        void display(int);
+        int s(int);
 
 };
 
@@ -73,41 +75,44 @@ int main()
                 break;
 
                 case 2:
-                 
-                    b1.inorder();
+
+                    
+                    b1.display(2);
                     break;
 
                 case 3:
 
-                    b1.preorder();
+                    
+                    b1.display(3);
                     break;
 
                 case 4:
 
-                    b1.postorder();
+                    
+                    b1.display(4);
                     break;
 
                 case 5:
 
                     printf("Enter number to be searched:\n");
                     scanf("%d",&num);
-                    if (b1.search(num))
+                    if (b1.s(num))
                     {
-                        printf("Number exists");
+                        printf("Number exists\n");
                     }
 
                     else
                     {
-                        printf("Number does not exist");
+                        printf("Number does not exist\n");
                     }
 
                     break;
 
-                    case 6:
+                case 6:
 
                         exit(0);
 
-                    default:
+                default:
 
                         printf("Invalid choice");
                         break;
@@ -124,15 +129,16 @@ int main()
 int binary_tree::insert(int num,struct node* root)
 {
     
-        int choice;
-        printf("%dLeft or right??",&choice);
+        char choice;
+        printf("LorY");
+        scanf(" %c",&choice);
 
         switch(choice)
         {
             case 'L':
                 
         
-                if (root==nullptr)
+                if (root->left==nullptr)
                 {
 
                     struct node* newnode = (struct node*)malloc(sizeof(struct node));
@@ -148,12 +154,14 @@ int binary_tree::insert(int num,struct node* root)
                 {
                     root = root->left;
                     insert(num,root);
+                    return 1;
                 }
+                return 0;
 
             case 'R':
                 
         
-                if (root==nullptr)
+                if (root->right==nullptr)
                 {
 
                     struct node* newnode = (struct node*)malloc(sizeof(struct node));
@@ -169,7 +177,9 @@ int binary_tree::insert(int num,struct node* root)
                 {
                     root = root->right;
                     insert(num,root);
+                    return 1;
                 }
+                return 0;
         }
     }
 
@@ -190,6 +200,86 @@ int binary_tree::ins(int num)
 
     else
     {
-        return insert(num,root);
+        insert(num,root);
     }
 }
+
+// Method to do inorder traversal
+
+void binary_tree::inorder(struct node* root)
+{
+    if(root!=nullptr)
+    {
+
+        inorder(root->left);
+        printf("%d\n",root->data);
+        inorder(root->right);
+
+    }
+
+}
+
+// Method to do preorder traversal
+
+void binary_tree::preorder(struct node* root)
+{
+    if(root!=nullptr)
+    {
+        
+        printf("%d\n",root->data);
+        preorder(root->left);
+        preorder(root->right);
+
+    }
+}
+
+// Method to do postorder traversal
+
+void binary_tree::postorder(struct node* root)
+{
+    if(root!=nullptr)
+    {
+        
+        postorder(root->left);
+        postorder(root->right);
+        printf("%d\n",root->data);
+    
+    }
+}
+
+// helper method
+
+void binary_tree::display(int choice)
+{
+    switch(choice)
+    {
+        case 2:
+            inorder(root);
+            break;
+        case 3:
+            preorder(root);
+            break;
+        case 4:
+            postorder(root);
+            break;
+    }
+}
+
+// method to search 
+int binary_tree::search(int num, struct node* root) {
+    if (root == nullptr) {
+        return 0;
+    } 
+    if (root->data == num) {
+        return 1;
+    } 
+    // Recursively search in the left and right subtrees
+    return search(num, root->left) || search(num, root->right);
+}
+
+// helper method
+int binary_tree::s(int num) {
+    // Call the search method with the root of the binary tree
+    return search(num, root);
+}
+
