@@ -2,26 +2,6 @@
 #include <stdlib.h>
 #include <time.h>
 
-class GraphNode {
-public:
-    int data;
-    GraphNode* next;
-    GraphNode* adj;
-
-    GraphNode(int d) : data(d), next(nullptr), adj(nullptr) {}
-
-    void addEdge(GraphNode* v) {
-        if (adj == nullptr) {
-            adj = v;
-        } else {
-            GraphNode* temp = adj;
-            while (temp->next != nullptr) {
-                temp = temp->next;
-            }
-            temp->next = v;
-        }
-    }
-};
 
 class DoublyLinkedList 
 {
@@ -122,15 +102,17 @@ private:
 
     int randomLevel() {
         int level = 0;
-        while (rand() / static_cast<float>(RAND_MAX) < probability && level < maxLevel) {
+        while (static_cast<float>(rand()) / RAND_MAX < probability && level < maxLevel) {
             level++;
         }
         return level;
     }
 
+
 public:
     SkipList(int maxLvl, float prob) : maxLevel(maxLvl), probability(prob) {
         head = new Node(-1, maxLevel);
+        srand(static_cast<unsigned>(time(0))); // Seed the random number generator
     }
 
     ~SkipList() {
@@ -142,46 +124,12 @@ public:
         }
         delete head;
     }
-
     void insert(int);
     bool search(int);
     void remove(int);
     void display();
-};
+}
 
-struct Graph_Node {
-    int data;
-    GraphNode* next;
-    // You might need additional members depending on your implementation
-    Graph_Node(int d) : data(d), next(nullptr) {}
-};
-
-
-class Graph {
-public:
-    Graph(int vertices);
-    ~Graph();
-    void addEdge(int source, int destination);
-    void display();
-
-private:
-    int V;
-    GraphNode* head;
-};
-
-class GraphLinkedList {
-public:
-    GraphLinkedList();
-    ~GraphLinkedList();
-    void insert(int data);
-    bool search(int data);
-    void remove(int data);
-    void display();
-
-private:
-    GraphNode* head;
-    int size;
-};
 
 void DoublyLinkedList::insertBeginning(int num) 
 {
@@ -461,174 +409,73 @@ void DoublyLinkedList::deleteDown(int num) {
 }
 
 
-void SkipList::insert(int data) {
-        int level = randomLevel();
-        Node* newNode = new Node(data, level);
-        Node* update[maxLevel + 1];
-        Node* current = head;
+void SkipList::insert(int value) {
+    Node* update[maxLevel + 1];
+    Node* current = head;
 
-        for (int i = maxLevel; i >= 0; --i) {
-            while (current->next[i] != nullptr && current->next[i]->data < data) {
-                current = current->next[i];
-            }
-            update[i] = current;
+    // Start from the highest level of the skip list
+    for (int i = maxLevel; i >= 0; i--) {
+        while (current->next[i] != nullptr && current->next[i]->data < value) {
+            current = current->next[i];
         }
-
-        for (int i = 0; i <= level; ++i) {
-            newNode->next[i] = update[i]->next[i];
-            update[i]->next[i] = newNode;
-        }
+        update[i] = current;
     }
 
-bool SkipList::search(int target) {
-        Node* current = head;
-        for (int i = maxLevel; i >= 0; --i) {
-            while (current->next[i] != nullptr && current->next[i]->data < target) {
-                current = current->next[i];
-            }
-        }
-        current = current->next[0];
-        return current != nullptr && current->data == target;
-    }
+    int level = randomLevel();
+    Node* newNode = new Node(value, level);
 
-void SkipList::remove(int target) {
-        Node* update[maxLevel + 1];
-        Node* current = head;
-
-        for (int i = maxLevel; i >= 0; --i) {
-            while (current->next[i] != nullptr && current->next[i]->data < target) {
-                current = current->next[i];
-            }
-            update[i] = current;
-        }
-
-        current = current->next[0];
-        if (current != nullptr && current->data == target) {
-            for (int i = 0; i <= maxLevel; ++i) {
-                if (update[i]->next[i] != current)
-                    break;
-                update[i]->next[i] = current->next[i];
-            }
-            delete current;
-        }
-    }
-
-void SkipList::display() {
-        std::cout << "Skip List: " << std::endl;
-        for (int i = maxLevel; i >= 0; --i) {
-            Node* current = head->next[i];
-            std::cout << "Level " << i << ": ";
-            while (current != nullptr) {
-                std::cout << current->data << " ";
-                current = current->next[i];
-            }
-            std::cout << std::endl;
-        }
-    }
-
-
-Graph::Graph(int vertices) {
-    V = vertices;
-    head = nullptr;
-}
-
-Graph::~Graph() {
-    GraphNode* current = head;
-    while (current != nullptr) {
-        GraphNode* next = current->next;
-        delete current;
-        current = next;
+    for (int i = 0; i <= level; i++) {
+        newNode->next[i] = update[i]->next[i];
+        update[i]->next[i] = newNode;
     }
 }
 
-void Graph::addEdge(int source, int destination) {
-    if (head == nullptr) {
-        head = new GraphNode(source);
-        head->addEdge(new GraphNode(destination));
-    } else {
-        GraphNode* current = head;
-        while (current != nullptr) {
-            if (current->data == source) {
-                current->addEdge(new GraphNode(destination));
+bool SkipList::search(int value) {
+    Node* current = head;
+    for (int i = maxLevel; i >= 0; i--) {
+        while (current->next[i] != nullptr && current->next[i]->data < value) {
+            current = current->next[i];
+        }
+    }
+    current = current->next[0];
+    return current != nullptr && current->data == value;
+}
+
+void SkipList::remove(int value) {
+    Node* update[maxLevel + 1];
+    Node* current = head;
+
+    for (int i = maxLevel; i >= 0; i--) {
+        while (current->next[i] != nullptr && current->next[i]->data < value) {
+            current = current->next[i];
+        }
+        update[i] = current;
+    }
+
+    current = current->next[0];
+
+    if (current != nullptr && current->data == value) {
+        for (int i = 0; i <= maxLevel; i++) {
+            if (update[i]->next[i] != current) {
                 break;
             }
-            current = current->next;
+            update[i]->next[i] = current->next[i];
         }
-
-        if (current == nullptr) { // Source vertex not found
-            head = new GraphNode(source);
-            head->addEdge(new GraphNode(destination));
-        }
-    }
-}
-
-void Graph::display() {
-    GraphNode* current = head;
-    while (current != nullptr) {
-        printf("%d -> ", current->data);
-        GraphNode* temp = current->adj;
-        while (temp != nullptr) {
-            printf("%d ", temp->data);
-            temp = temp->next;
-        }
-        printf("NULL\n");
-        current = current->next;
-    }
-}
-
-GraphLinkedList::GraphLinkedList() : head(nullptr), size(0) {}
-
-GraphLinkedList::~GraphLinkedList() {
-    GraphNode* current = head;
-    while (current != nullptr) {
-        GraphNode* next = current->next;
         delete current;
-        current = next;
     }
 }
 
-void GraphLinkedList::insert(int data) {
-    GraphNode* newNode = new GraphNode(data);
-    newNode->next = head;
-    head = newNode;
-    size++;
-}
-
-bool GraphLinkedList::search(int data) {
-    GraphNode* current = head;
-    while (current != nullptr) 
-    {
-        if (current->data == data) 
-        {
-            return true;
+void SkipList::display() {
+    for (int i = 0; i <= maxLevel; i++) {
+        Node* node = head->next[i];
+        std::cout << "Level " << i << ": ";
+        while (node != nullptr) {
+            std::cout << node->data << " ";
+            node = node->next[i];
         }
-        current = current->next;
-    }
-    return false;
-}
-
-void GraphLinkedList::remove(int data) 
-{
-    GraphNode* prev = nullptr;
-    GraphNode* current = head;
-
-    while (current != nullptr) {
-        if (current->data == data) {
-            if (prev != nullptr) {
-                prev->next = current->next;
-            } else {
-                head = current->next;
-            }
-            delete current;
-            size--;
-            return;
-        }
-        prev = current;
-        current = current->next;
+        std::cout << std::endl;
     }
 }
-
-
 
 void MultiCircularLinkedList::insertEnd(int num) {
     CircularNode* newNode = new CircularNode(num);
@@ -871,8 +718,7 @@ int main() {
         printf("1. Doubly Linked List\n");
         printf("2. Circular Linked List\n");
         printf("3. Skip List\n");
-        printf("4. Graph-Based Linked List\n");
-        printf("5. Exit\n");
+        printf("4. Exit\n");
         printf("Enter your choice: ");
         scanf("%d", &choice);
 
@@ -1152,42 +998,7 @@ int main() {
                 } while (slChoice != 5);
                 break;
             }
-            case 4: {
-                int numVertices;
-                printf("Enter number of vertices: ");
-                scanf("%d", &numVertices);
-                Graph g(numVertices);
-                int gChoice;
-                do {
-                    printf("\nGraph-Based Linked List Operations:\n");
-                    printf("1. Add Edge\n");
-                    printf("2. Display\n");
-                    printf("3. Back to main menu\n");
-                    printf("Enter your choice: ");
-                    scanf("%d", &gChoice);
-
-                    switch (gChoice) {
-                        case 1: {
-                            int source, destination;
-                            printf("Enter source vertex: ");
-                            scanf("%d", &source);
-                            printf("Enter destination vertex: ");
-                            scanf("%d", &destination);
-                            g.addEdge(source, destination);
-                            break;
-                        }
-                        case 2:
-                            g.display();
-                            break;
-                        case 3:
-                            break;
-                        default:
-                            printf("Invalid choice\n");
-                    }
-                } while (gChoice != 3);
-                break;
-            }
-            case 5:
+            case 4:
                 printf("Exiting program\n");
                 exit(0);
                 break;
